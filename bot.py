@@ -19,13 +19,14 @@ def generate_buttons(bts_names, markup):
 def start(message):
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup = generate_buttons(['Стать Сантой'], markup)
-    bot.send_message(message.chat.id, 'Привееет, я бот для тайного санты Студлиги!')
-    # TODO: СТИКЕР
+    bot.send_message(message.chat.id, 'Привееет, я бот для Тайного Санты Студлиги!')
+    bot.send_sticker(message.chat.id,
+                     'CAACAgIAAxkBAAEGsV9jjcgcnL0TRHi24pXy7zrOLctBLgACzwADq1fEC6Wy_-K65z0pKwQ')  # хонка
     bot.send_message(message.chat.id, 'Снег уже выпал, гирлянды уже зашуршали, а значит '
                                       'пора задуматься о рождественском турнире, новогодней мафтусовке и, '
                                       'конечно, подарках..\n\n'
                                       '🎄 Ценовой диапазон подарка — 15-20р\n'
-                                      '🎄 Окончание регистрации — 5 декабря 18:00\n'
+                                      '🎄 Окончание регистрации — 6 декабря 23:59\n'
                                       '🎄 Когда сбор? — Выберем дату к Новому году\n'
                                       '🎄 Смогу ли я раздобыть информацию, кто мой Санта? — '
                                       'Нень, бот подконтролен самой неподкупной г-же Лени🦥\n\n'
@@ -45,7 +46,9 @@ def help_(message):
                                           '/get_matches\n'
                                           '/match\n'
                                           '/dummy_match\n'
-                                          '/play\n')
+                                          '/play\n'
+                                          '/kick\n'
+                                          '/notification')
     else:
         bot.send_message(message.chat.id, '/start\n'
                                           '/join\n'
@@ -59,27 +62,42 @@ def join(message):
         bot.send_message(message.chat.id, 'Ха-ха хитрюшка, два подарка получить не получится. Ты уже играешь')
     elif fixed:
         bot.send_message(message.chat.id, 'А всё, а поздно, а надо было раньше')
-        # TODO: СТИКЕР
+        bot.send_sticker(message.chat.id,
+                         'CAACAgIAAxkBAAEGsWBjjcgckIH8wWWjWFf9ItfD2A9KywACWhcAAhVy0UomNQvcnMWq1isE')  # лох
+
     else:
-            markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-            markup = generate_buttons(['Написать письмо Санте', 'Покинуть игру'], markup)
+        bot.send_message(message.chat.id, 'Введи ник или имя, если ника пока нет')
+        bot.register_next_step_handler(message, after_nick)
 
-            db.add_participant(message.chat.id)
-            bot.send_message(message.chat.id, 'Ураа, ты участница тайного Санты Студлужи!\n\n'
-                                              'После окончания регистрации я сообщу тебе, кто твоя подопечная, '
-                                              'и поделюсь её вишлистом (бот сделан феминистками), '
-                                              'а пока ты можешь составить список своих пожеланий, '
-                                              'используя меню или команду /wish',
-                             reply_markup=markup)
 
-            bot.send_message(message.chat.id, 'Маленькие правила, чтобы все остались довольны \n'
-                                              '🎁 Пиши все свои пожелания одним сообщением в формате списка '
-                                              '(если вы напишите два и более сообщения, бот запишет только первое)\n'
-                                              '🎁 Пиши конкретно, если указываешь настолки или книги\n'
-                                              '🎁 Если вы хотите полностью перезаписать свои пожелания, '
-                                              'используйте меню или команду /wish повторно, '
-                                              'тогда старое письмо затеряется где-то на почте',
-                             reply_markup=markup)
+def after_nick(message):
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = generate_buttons(['Написать письмо Санте', 'Покинуть игру'], markup)
+
+    db.add_participant(message.chat.id, message.text)
+
+    bot.send_message(message.chat.id, f'Ураа,{db.get_nickname(message.chat.id)}, '
+                                      f'ты участница Тайного Санты Студлужи!\n\n'
+                                      f'После окончания регистрации я сообщу тебе, кто твоя подопечная, '
+                                      f'и поделюсь её вишлистом \n'
+                                      f'✨\n'
+                                      f'-Бот сделан феминистками..\n'
+                                      f'-Сексистками, Тори)\n'
+                                      f'✨\n'
+                                      f'A пока ты можешь составить список своих пожеланий, '
+                                      f'используя меню или команду /wish',
+                     reply_markup=markup)
+
+    bot.send_message(message.chat.id, 'Маленькие правила, чтобы все остались довольны: \n'
+                                      '🎁 Пиши все свои пожелания одним сообщением в формате списка '
+                                      '(если вы напишите два и более сообщения, бот запишет только первое)\n'
+                                      '🎁 Пиши конкретно, если указываешь настолки или книги\n'
+                                      '🎁 Если вы хотите полностью перезаписать свои пожелания, '
+                                      'используйте меню или команду /wish повторно, '
+                                      'тогда старое письмо затеряется где-то на почте',
+                     reply_markup=markup)
+    bot.send_sticker(message.chat.id,
+                     'CAACAgUAAxkBAAEGsWFjjcgc1yrMse0CjPjnbWFgmUoLJQACSQcAAszG4gKKHaJFtDWCOSsE')  # lov
 
 
 @bot.message_handler(commands=['leave'])
@@ -97,6 +115,21 @@ def leave(message):
         db.delete_participant(message.chat.id)
         bot.send_message(message.chat.id, 'Ты куда, Одиссей, от жены, от детей',
                          reply_markup=markup)
+
+
+@bot.message_handler(commands=['notification'])
+def notification(message):
+    if message.chat.id in config.admin_chat_id:
+        bot.send_message(message.chat.id, 'Введи сообщение')
+        bot.register_next_step_handler(message, send_to_all)
+    else:
+        bot.send_message(message.chat.id, 'Sorry, you don\'t have rights to do this')
+
+
+def send_to_all(message):
+    for chat_id in db.get_participants():
+        bot.send_message(chat_id, message.text)
+    bot.send_message(message.chat.id, 'Done')
 
 
 def send_wishes_to_santa(chat_id):
@@ -137,6 +170,20 @@ def fix(message):
         bot.send_message(message.chat.id, 'Sorry, you don\'t have rights to do this')
 
 
+@bot.message_handler(commands=['kick'])
+def kick(message):
+    if message.chat.id in config.admin_chat_id:
+        bot.register_next_step_handler(message, delete)
+    else:
+        bot.send_message(message.chat.id, 'Sorry, you don\'t have rights to do this')
+
+
+def delete(message):
+    part = db.get_participants()
+    if message.text.isdigit() and int(message.text) < len(part):
+        db.delete_participant(part[int(message.text)])
+
+
 @bot.message_handler(commands=['unfix'])
 def unfix(message):
     if not is_started:
@@ -166,8 +213,10 @@ def get_participants(message):
     if message.chat.id in config.admin_chat_id:
         participants = db.get_participants()
         str_ = f'number of participants: {len(participants)}\n\n'
+        i_ = 0
         for chat_id in participants:
-            str_ += f'{bot.get_chat(chat_id).first_name}\n'
+            str_ += f'{i_} {bot.get_chat(chat_id).first_name} @{bot.get_chat(chat_id).username}\n'
+            i_ += 1
         bot.send_message(message.chat.id, str_)
     else:
         bot.send_message(message.chat.id, 'Sorry, you don\'t have rights to do this')
@@ -211,15 +260,19 @@ def play(message):
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         markup = generate_buttons(['Покинуть игру', 'Написать письмо Санте'], markup)
         for chat_id in db.get_participants():
-            ward_chat = bot.get_chat(db.get_participant_ward(chat_id))
+            ward_id = db.get_participant_ward(chat_id)
+            ward_chat = bot.get_chat(ward_id)
             bot.send_message(chat_id,
                              f'Я объявляю Тайного Санту открытым, '
-                             f'похлопайте вашей подопечной - {ward_chat.first_name}'
+                             f'похлопайте вашей подопечной - {db.get_nickname(ward_id)}'
                              f'(@{ward_chat.username})',
                              reply_markup=markup)
+
+            bot.send_sticker(chat_id,
+                             'CAACAgQAAxkBAAEGsWJjjcgcfF1u1yfIgbPUjlrMbD-yFwACowkAAhsKCFAGbfpeakI6rCsE')  # буп
         for chat_id in db.get_participants():
             send_wishes_to_santa(chat_id)
-        bot.send_message(message.chat.id, 'Game has started')
+        bot.send_message(message.chat.id, 'Game has been started')
     else:
         bot.send_message(message.chat.id, 'Sorry, you don\'t have rights to do this')
 

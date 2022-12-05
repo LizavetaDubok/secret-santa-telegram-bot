@@ -6,9 +6,12 @@ class DataBase:
         self.connection = sqlite3.connect(database_file, check_same_thread=False)
         self.cursor = self.connection.cursor()
 
-    def add_participant(self, chat_id):
+    def add_participant(self, chat_id, nickname):
         with self.connection:
-            return self.cursor.execute('INSERT INTO "participants" ("chat_id") VALUES (?)', (chat_id, ))
+            return self.cursor.execute('INSERT INTO "participants" ("chat_id", "nickname") VALUES (?, ?)',
+                                       (chat_id, nickname))
+            # return self.cursor.execute('UPDATE "participants" SET "nickname" = ? WHERE "chat_id" = ?',
+            # (nickname, chat_id))
 
     def check_participant(self, chat_id):
         with self.connection:
@@ -23,14 +26,19 @@ class DataBase:
         with self.connection:
             return self.cursor.execute('UPDATE "participants" SET "wishes" = ? WHERE "chat_id" = ?', (wishes, chat_id))
 
+    def set_participant_nickname(self, chat_id, nickname):
+        with self.connection:
+            return self.cursor.execute('UPDATE "participants" SET "nickname" = ? WHERE "chat_id" = ?',
+                                       (nickname, chat_id))
+
     def get_chat_id_by_id(self, id_):
         return self.cursor.execute('SELECT "chat_id" FROM "participants" WHERE "id" = ?',
                                    (id_,)).fetchone()[0]
 
-    def set_santa(self, id, santa_id):
+    def set_santa(self, id_, santa_id):
         with self.connection:
             return self.cursor.execute('UPDATE "participants" SET "santa_id" = ? WHERE "id" = ?',
-                                       (santa_id, id))
+                                       (santa_id, id_))
 
     def make_dummy_matches(self):
         with self.connection:
@@ -63,5 +71,10 @@ class DataBase:
     def get_participant_santa(self, chat_id):
         with self.connection:
             return self.cursor.execute('SELECT "santa_id" FROM "participants" WHERE "chat_id" = ?',
+                                       (chat_id,)).fetchone()[0]
+
+    def get_nickname(self, chat_id):
+        with self.connection:
+            return self.cursor.execute('SELECT "nickname" FROM "participants" WHERE "chat_id" = ?',
                                        (chat_id,)).fetchone()[0]
 
